@@ -32,6 +32,7 @@ import {
   cifPl
 } from '@coreui/icons'
 import {
+  cilAccountLogout,
   cilArrowRight,
   cilBan,
   cilBasket,
@@ -64,6 +65,7 @@ import {
   cilMagnifyingGlass,
   cilMoon,
   cilOptions,
+  cilPaperPlane,
   cilPencil,
   cilPeople,
   cilPuzzle,
@@ -73,6 +75,7 @@ import {
   cilSpeedometer,
   cilStar,
   cilTask,
+  cilTrash,
   cilUser,
   cilUserFemale,
   cilUserFollow,
@@ -83,6 +86,7 @@ import {
 export const iconsSet = Object.assign(
   {},
   {
+    cilAccountLogout,
     cilArrowRight,
     cilBan,
     cilBasket,
@@ -115,6 +119,7 @@ export const iconsSet = Object.assign(
     cilMagnifyingGlass,
     cilMoon,
     cilOptions,
+    cilPaperPlane,
     cilPencil,
     cilPeople,
     cilPuzzle,
@@ -124,6 +129,7 @@ export const iconsSet = Object.assign(
     cilSpeedometer,
     cilStar,
     cilTask,
+    cilTrash,
     cilUser,
     cilUserFemale,
     cilUserFollow,

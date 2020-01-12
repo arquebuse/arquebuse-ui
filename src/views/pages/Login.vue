@@ -6,11 +6,11 @@
           <CCard class="p-4">
             <CCardBody>
               <CForm>
-                <h1>Login</h1>
-                <p class="text-muted">Sign In to your account</p>
+                <h2>Login</h2>
                 <CInput
                   placeholder="Username"
                   autocomplete="username email"
+                  v-model="username"
                 >
                   <template #prepend-content><CIcon name="cil-user"/></template>
                 </CInput>
@@ -18,15 +18,14 @@
                   placeholder="Password"
                   type="password"
                   autocomplete="curent-password"
+                  v-model="password"
                 >
                   <template #prepend-content><CIcon name="cil-lock-locked"/></template>
                 </CInput>
+                <CAlert v-if="alert" show :color="alertColor">{{ alertMessage }}</CAlert>
                 <CRow>
                   <CCol col="6">
-                    <CButton color="primary" class="px-4">Login</CButton>
-                  </CCol>
-                  <CCol col="6" class="text-right">
-                    <CButton color="link" class="px-0">Forgot password?</CButton>
+                    <CButton color="primary" class="px-4" @click="login" >Login</CButton>
                   </CCol>
                 </CRow>
               </CForm>
@@ -39,14 +38,8 @@
             style="width:44%"
             body-wrapper
           >
-            <h2>Sign up</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            <CButton
-              color="primary"
-              class="active mt-3"
-            >
-              Register Now!
-            </CButton>
+            <h2>Arquebuse</h2>
+            <p>Arquebuse is an email infrastructure testing tool designed to facilitate email flow diagnostic and monitoring.</p>
           </CCard>
         </CCardGroup>
       </CCol>
@@ -55,7 +48,36 @@
 </template>
 
 <script>
-export default {
-  name: 'Login'
-}
+  import {AUTH_REQUEST} from '../../store/actions/auth'
+  export default {
+    name: 'Login',
+    data(){
+      return {
+        username     : '',
+        password     : '',
+        alert        : false,
+        alertMessage : '',
+        alertColor   : ''
+      }
+    },
+    methods: {
+      login: function () {
+        const { username, password } = this;
+        this.$store.dispatch(AUTH_REQUEST, { username, password }).then(() => {
+          this.$router.push('/');
+        }).catch( () => {
+          this.alert        = true;
+          this.alertMessage = 'Username or password is invalid'
+          this.alertColor   = 'danger'
+        });
+      }
+    },
+    mounted() {
+      if (this.$store.getters.status === 'DISCONNECTED') {
+        this.alert        = true;
+        this.alertMessage = 'Your session has expired'
+        this.alertColor   = 'warning'
+      }
+    },
+  }
 </script>
