@@ -19,8 +19,9 @@ const Users = () => import('@/views/configuration/Users');
 
 // Emails
 const Inbound = () => import('@/views/emails/Inbound');
+const MailDetails = () => import('@/views/emails/MailDetails');
+const NewMail = () => import('@/views/emails/NewMail');
 const Outbound = () => import('@/views/emails/Outbound');
-
 
 
 Vue.use(Router);
@@ -59,14 +60,47 @@ function configRoutes () {
           component: Dashboard
         },
         {
-          path:      'inbound',
-          name:      'Inbound',
-          component: Inbound
+          path: 'inbound',
+          meta: { label: 'Inbound'},
+          component: {
+            render (c) { return c('router-view') }
+          },
+          children: [
+            {
+              path: '',
+              component: Inbound,
+            },
+            {
+              path: ':id',
+              meta: { label: 'Mail Details'},
+              name: 'InboundMail',
+              component: MailDetails,
+            },
+          ]
         },
         {
-          path:      'outbound',
-          name:      'Outbound',
-          component: Outbound
+          path: 'outbound',
+          meta: { label: 'Outbound'},
+          component: {
+            render (c) { return c('router-view') }
+          },
+          children: [
+            {
+              path: '',
+              component: Outbound,
+            },
+            {
+              path: ':id',
+              meta: { label: 'Mail Details'},
+              name: 'OutboundMail',
+              component: MailDetails,
+            },
+          ]
+        },
+        {
+          path:      'newmail',
+          name:      'NewMail',
+          component: NewMail
         },
         {
           path:      'users',

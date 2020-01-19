@@ -1,7 +1,7 @@
 <template>
   <CRow>
-    <CCol col="12" xl="8">
-      <transition name="slide">
+    <CCol col="12" xl="12">
+      <transition name="fade">
         <CCard>
           <CCardHeader>
             Users
@@ -9,7 +9,7 @@
           <CCardBody>
             <CDataTable
               hover
-              striped
+              table-filter
               :items="items"
               :fields="fields"
               :items-per-page="perPage"
