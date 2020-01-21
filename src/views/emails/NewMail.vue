@@ -72,7 +72,7 @@
             server: '127.0.0.1:2525',
             from: 'someone@arquebuse.org',
             to: 'someone.else@arquebuse.org',
-            data: 'Subject: Hello from Arquebuse UI !!!\r\nThis is the email body.\r\n',
+            data: 'Subject: Hello from Arquebuse UI !!!\n\nThis is the email body.\n\nBest regards,\nArquebuse',
         }
       }
     },
