@@ -18,8 +18,26 @@
                             <CListGroupItem v-for="item in items" href="#">
                                 <div v-html="'<b>' + item.title + ': </b>' + item.value"></div>
                             </CListGroupItem>
+                            <CListGroupItem v-if="parseErrors.length > 0 " color="warning" href="#">
+                                <strong>MIME parsing error(s): </strong><br/>
+                                    <ul>
+                                        <li v-for="parseError in parseErrors">{{parseError}}</li>
+                                    </ul>
+                            </CListGroupItem>
+                            <CListGroupItem v-if="headers.length > 0"  href="#">
+                                <strong>Headers: </strong><br/>
+                                <ul>
+                                    <li v-for="header in headers"><b>{{header.id}}: </b>{{header.values[0]}}</li>
+                                </ul>
+                            </CListGroupItem>
+                            <CListGroupItem v-if="textMessage !== ''" href="#">
+                                <strong>Text message: </strong><pre style="margin-left: 15px">{{textMessage}}</pre>
+                            </CListGroupItem>
+                            <CListGroupItem v-if="htmlMessage !== ''" href="#">
+                                <strong>HTML message: </strong><pre style="margin-left: 15px">{{htmlMessage}}</pre>
+                            </CListGroupItem>
                             <CListGroupItem href="#">
-                                <strong>Data: </strong><pre>{{rawData}}</pre>
+                                <strong>Raw data: </strong><pre style="margin-left: 15px">{{rawData}}</pre>
                             </CListGroupItem>
                         </CListGroup>
                     </CCardBody>
@@ -43,6 +61,10 @@
                 items: [],
                 status: 'undefined',
                 rawData: '',
+                headers: [],
+                parseErrors: [],
+                textMessage: '',
+                htmlMessage: '',
             }
 
             /*
@@ -53,6 +75,20 @@
                 "to": "Someone Else <someone.else@arquebuse.org",
                 "subject": "discount Gop",
                 "data": "To: Someone Else\nSubject: discount Gop\nThis is the email body.\n"
+
+
+                ID          string         `json:"id"`
+                Received    time.Time      `json:"timestamp"`
+                Client      string         `json:"client,omitempty"`
+                From        string         `json:"from"`
+                To          string         `json:"to"`
+                Subject     string         `json:"subject"`
+                Data        string         `json:"data,omitempty"`
+                Parsed      bool           `json:"parsed"`
+                Text        string         `json:"text"`
+                Html        string         `json:"html"`
+                Headers     []header       `json:"headers"`
+                ParseErrors []string       `json:"parseErrors"`
             }*/
         },
         paginationProps: {
@@ -83,12 +119,23 @@
                       let date = moment(value, moment.ISO_8601);
                       value = date.format("DD.MM.YYYY HH:mm:ss");
                       break;
+                    case "text":
+                      this.textMessage = value;
+                      break;
+                    case "html":
+                      this.htmlMessage = value;
+                      break;
                     case "data":
-                      //value = '<br />' + value.replace(/(\r\n|\n|\r)/g, "<br />");
                       this.rawData = value;
                       break;
                     case 'status':
                       this.status = value;
+                      break;
+                    case 'parseErrors':
+                      this.parseErrors = value;
+                      break;
+                    case 'headers':
+                      this.headers = value;
                       break;
                     default:
                       let div = document.createElement('div');
