@@ -15,29 +15,55 @@
                             <CListGroupItem v-if="status !== 'undefined'" :color="getStatusColor(status)" href="#">
                                 <strong>Status: </strong>{{status}}
                             </CListGroupItem>
-                            <CListGroupItem v-for="item in items" href="#">
-                                <div v-html="'<b>' + item.title + ': </b>' + item.value"></div>
+
+                            <CListGroupItem href="#">
+                                <strong>Date: </strong>{{timestamp}}
                             </CListGroupItem>
+
+                            <CListGroupItem v-if="client !== ''" href="#">
+                                <strong>Received from: </strong>{{client}}
+                            </CListGroupItem>
+
+                            <CListGroupItem v-if="server !== ''" href="#">
+                                <strong>Sent to: </strong>{{server}}
+                            </CListGroupItem>
+
+                            <CListGroupItem :color="getErrorColor(fromError)" href="#">
+                                <strong>From: </strong>{{from}}
+                            </CListGroupItem>
+
+                            <CListGroupItem :color="getErrorColor(toError)" href="#">
+                                <strong>To: </strong>{{to}}
+                            </CListGroupItem>
+
+                            <CListGroupItem href="#">
+                                <strong>Subject: </strong>{{subject}}
+                            </CListGroupItem>
+
                             <CListGroupItem v-if="parseErrors.length > 0 " color="warning" href="#">
                                 <strong>MIME parsing error(s): </strong><br/>
                                     <ul>
                                         <li v-for="parseError in parseErrors">{{parseError}}</li>
                                     </ul>
                             </CListGroupItem>
+
                             <CListGroupItem v-if="headers.length > 0"  href="#">
                                 <strong>Headers: </strong><br/>
                                 <ul>
-                                    <li v-for="header in headers"><b>{{header.id}}: </b>{{header.values[0]}}</li>
+                                    <li v-for="header in headers"><b>{{header.id}}: </b>{{header.values}}</li>
                                 </ul>
                             </CListGroupItem>
-                            <CListGroupItem v-if="textMessage !== ''" href="#">
-                                <strong>Text message: </strong><pre style="margin-left: 15px">{{textMessage}}</pre>
+
+                            <CListGroupItem v-if="text !== ''" href="#">
+                                <strong>Text message: </strong><pre style="margin-left: 15px">{{text}}</pre>
                             </CListGroupItem>
-                            <CListGroupItem v-if="htmlMessage !== ''" href="#">
-                                <strong>HTML message: </strong><pre style="margin-left: 15px">{{htmlMessage}}</pre>
+
+                            <CListGroupItem v-if="html !== ''" href="#">
+                                <strong>HTML message: </strong><pre style="margin-left: 15px">{{html}}</pre>
                             </CListGroupItem>
+
                             <CListGroupItem href="#">
-                                <strong>Raw data: </strong><pre style="margin-left: 15px">{{rawData}}</pre>
+                                <strong>Raw data: </strong><pre style="margin-left: 15px">{{data}}</pre>
                             </CListGroupItem>
                         </CListGroup>
                     </CCardBody>
@@ -58,37 +84,38 @@
         freeSet,
         data: () => {
             return {
-                items: [],
+                to: '',
+                toError: false,
+                from: '',
+                fromError: false,
                 status: 'undefined',
-                rawData: '',
+                data: '',
                 headers: [],
                 parseErrors: [],
-                textMessage: '',
-                htmlMessage: '',
+                text: '',
+                html: '',
+                timestamp: '',
+                client: '',
+                server: '',
+                subject: '',
             }
 
             /*
-                "id": "1WXyeQITbvodz4Y3levjSfkbjFf",
-                "timestamp": "2020-01-18T02:18:48.68118+01:00",
-                "client": "127.0.0.1:58975",
-                "from": "someone@arquebuse.org",
-                "to": "Someone Else <someone.else@arquebuse.org",
-                "subject": "discount Gop",
-                "data": "To: Someone Else\nSubject: discount Gop\nThis is the email body.\n"
-
-
-                ID          string         `json:"id"`
-                Received    time.Time      `json:"timestamp"`
-                Client      string         `json:"client,omitempty"`
-                From        string         `json:"from"`
-                To          string         `json:"to"`
-                Subject     string         `json:"subject"`
-                Data        string         `json:"data,omitempty"`
-                Parsed      bool           `json:"parsed"`
-                Text        string         `json:"text"`
-                Html        string         `json:"html"`
-                Headers     []header       `json:"headers"`
-                ParseErrors []string       `json:"parseErrors"`
+                ID          string    `json:"id"`
+                Received    time.Time `json:"timestamp"`
+                Client      string    `json:"client,omitempty"`
+                Server      string    `json:"server,omitempty"`
+                From        string    `json:"from"`
+                FromError   bool      `json:"fromError"`
+                To          string    `json:"to"`
+                ToError     bool      `json:"toError"`
+                Subject     string    `json:"subject"`
+                Data        string    `json:"data,omitempty"`
+                Parsed      bool      `json:"parsed"`
+                Text        string    `json:"text"`
+                Html        string    `json:"html"`
+                Headers     []header  `json:"headers"`
+                ParseErrors []string  `json:"parseErrors"`
             }*/
         },
         paginationProps: {
@@ -98,15 +125,6 @@
             nextButtonHtml: 'next'
         },
         mounted() {
-            let fields = {
-                timestamp: "Date",
-                client: "Origin server",
-                server: "Destination server",
-                from: "From",
-                to: "To",
-                subject: "Subject",
-            };
-
             let direction = this.$route.path.startsWith("/inbound") ? '/inbound/' : '/outbound/'
 
             axios({ method: "GET", "url": direction + this.$route.params.id  }).then(result => {
@@ -114,38 +132,26 @@
                 for (let key in result.data) {
                   value = result.data[key];
 
-                  switch (key) {
-                    case "timestamp":
-                      let date = moment(value, moment.ISO_8601);
-                      value = date.format("DD.MM.YYYY HH:mm:ss");
-                      break;
-                    case "text":
-                      this.textMessage = value;
-                      break;
-                    case "html":
-                      this.htmlMessage = value;
-                      break;
-                    case "data":
-                      this.rawData = value;
-                      break;
-                    case 'status':
-                      this.status = value;
-                      break;
-                    case 'parseErrors':
-                      this.parseErrors = value;
-                      break;
-                    case 'headers':
-                      this.headers = value;
-                      break;
-                    default:
-                      let div = document.createElement('div');
-                      div.appendChild(document.createTextNode(value));
-                      value = div.innerHTML;
-                      break;
-                  }
-
-                  if (key in fields) {
-                    this.items.push({title: fields[key], value: value});
+                  if (this.hasOwnProperty(key)) {
+                    switch (key) {
+                      case "headers":
+                      case "parseErrors":
+                      case "toError":
+                      case "fromError":
+                      case "html":
+                      case "data":
+                        this[key] = value;
+                        break;
+                      case "timestamp":
+                        let date = moment(value, moment.ISO_8601);
+                        this[key] = date.format("DD.MM.YYYY HH:mm:ss");
+                        break;
+                      default:
+                        let div = document.createElement('div');
+                        div.appendChild(document.createTextNode(value));
+                        this[key] = div.innerHTML;
+                        break;
+                    }
                   }
                 }
             }).catch( () => {
@@ -164,6 +170,9 @@
                 return status === 'SENT' ? 'success'
                   : status === 'RETRIED' ? 'warning'
                     : status === 'FAILED' ? 'danger' : 'primary';
+            },
+            getErrorColor (error) {
+                return error ? 'warning' : '';
             },
         }
     }
