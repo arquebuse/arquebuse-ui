@@ -9,12 +9,6 @@ export default [
         icon: 'cil-speedometer',
       },
       {
-        _name: 'CSidebarNavItem',
-        name: 'Logout',
-        to: '/logout',
-        icon: 'cil-account-logout'
-      },
-      {
         _name: 'CSidebarNavTitle',
         _children: ['Emails']
       },

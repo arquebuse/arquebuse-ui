@@ -2,6 +2,7 @@
   <div class="c-app">
     <TheSidebar/>
     <div class="c-wrapper">
+      <TheHeader/>
       <div class="c-body">
         <main class="c-main">
           <CContainer fluid>
@@ -18,6 +19,7 @@
 
 <script>
 import TheSidebar from './TheSidebar'
+import TheHeader from './TheHeader'
 import TheFooter from './TheFooter'
 import axios from 'axios'
 
@@ -25,6 +27,7 @@ export default {
   name: 'TheContainer',
   components: {
     TheSidebar,
+    TheHeader,
     TheFooter
   },
   mounted: function () {
