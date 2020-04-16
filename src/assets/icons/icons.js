@@ -70,6 +70,7 @@ import {
   cilPaperPlane,
   cilPencil,
   cilPeople,
+  cilPlus,
   cilPuzzle,
   cilSettings,
   cilShieldAlt,
@@ -84,9 +85,11 @@ import {
   cilXCircle
 
 } from '@coreui/icons'
+import { logo } from './logo'
 
 export const iconsSet = Object.assign(
   {},
+  { logo },
   {
     cilAccountLogout,
     cilArrowLeft,
@@ -126,6 +129,7 @@ export const iconsSet = Object.assign(
     cilPaperPlane,
     cilPencil,
     cilPeople,
+    cilPlus,
     cilPuzzle,
     cilSettings,
     cilShieldAlt,

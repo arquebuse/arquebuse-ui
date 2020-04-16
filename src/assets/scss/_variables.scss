@@ -1,1 +1,25 @@
 // Variable overrides
+
+$brand-primary: #f1471c;
+$brand-secondary: #ced2d8;
+
+$blue: #321fdb;
+$cyan: #3399ff;
+$red: #e55353;
+$green: #2eb85c;
+$orange: #f9b115;
+$light: #ebedef;
+$dark: #636f83;
+
+$theme-colors: (
+        primary: $brand-primary,
+        secondary: $brand-secondary,
+        success: $green,
+        info: $cyan,
+        warning: $orange,
+        danger: $red,
+        light: $light,
+        dark: $dark
+);
+
+$link-color: $dark;
