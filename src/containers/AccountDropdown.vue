@@ -16,12 +16,24 @@
               :show.sync="pwdDialog"
               :no-close-on-backdrop="true"
               :centered="true"
-              title="Modal title 2"
-              color="primary"
+              title="Change password"
+              color="dark"
       >
         <CForm>
           <CInput
                   placeholder="Current Password"
+                  label="Current"
+                  horizontal
+                  type="password"
+                  autocomplete="current_password"
+                  v-model="currentPassword"
+          >
+            <template #prepend-content><CIcon name="cil-lock-locked"/></template>
+          </CInput>
+          <CInput
+                  placeholder="New Password"
+                  label="New"
+                  horizontal
                   type="password"
                   autocomplete="password"
                   v-model="password"
@@ -30,21 +42,11 @@
           </CInput>
           <CInput
                   placeholder="New Password"
+                  label="Confirm"
+                  horizontal
                   type="password"
-                  autocomplete="new-password"
-                  v-model="newPassword"
-                  invalid-feedback="Please provide at least 6 characters"
-                  :is-valid="validateNewPass"
-          >
-            <template #prepend-content><CIcon name="cil-lock-locked"/></template>
-          </CInput>
-          <CInput
-                  placeholder="Current Password"
-                  type="password"
-                  autocomplete="new-password"
-                  v-model="newPassword2"
-                  invalid-feedback="Please enter the same password 2 times"
-                  :is-valid="validateNewPass2"
+                  autocomplete="confirm_password"
+                  v-model="confirmPassword"
           >
             <template #prepend-content><CIcon name="cil-lock-locked"/></template>
           </CInput>
@@ -56,7 +58,7 @@
         </template>
         <template #footer>
           <CButton @click="closeDialog" color="secondary">Cancel</CButton>
-          <CButton @click="submit" color="secondary">Submit</CButton>
+          <CButton @click="submit" color="primary">Update</CButton>
         </template>
       </CModal>
     </template>
@@ -76,15 +78,15 @@ export default {
   name: 'AccountDropdown',
   data () {
     return {
-      fullName:     'Unknown !!!',
-      pwdDialog:    false,
-      accountMenu:  false,
-      password:     '',
-      newPassword:  '',
-      newPassword2: '',
-      alertColor:   'alert',
-      alert:        false,
-      alertMessage: '',
+      fullName:        'Unknown !!!',
+      pwdDialog:       false,
+      accountMenu:     false,
+      currentPassword: '',
+      password:        '',
+      confirmPassword: '',
+      alertColor:      'alert',
+      alert:           false,
+      alertMessage:    '',
     }
   },
   mounted() {
@@ -100,12 +102,24 @@ export default {
     },
     closeDialog() {
       this.pwdDialog = false;
+      this.currentPassword = '';
       this.password = '';
-      this.newPassword = '';
-      this.newPassword2 = '';
+      this.confirmPassword = '';
     },
     submit() {
-      axios({ method: "PATCH", "url": "/users/me", "data": { "password": this.password, "newPassword": this.newPassword }, "headers": { "content-type": "application/json" }}).then(resp => {
+      if (this.password.length < 6) {
+        this.alertMessage = "Password must be at least 5 characters long";
+        this.alert = true;
+        return
+      }
+
+      if (this.password != this.confirmPassword) {
+        this.alertMessage = "New passwords are not the same";
+        this.alert = true;
+        return
+      }
+
+      axios({ method: "PATCH", "url": "/users/me", "data": { "password": this.currentPassword, "newPassword": this.password }, "headers": { "content-type": "application/json" }}).then(resp => {
         this.closeDialog()
       })
       .catch(err => {
@@ -118,12 +132,6 @@ export default {
 
         this.alert = true;
       })
-    },
-    validateNewPass() {
-      return (this.newPassword.length > 5)
-    },
-    validateNewPass2() {
-      return (this.newPassword === this.newPassword2)
     }
   }
 }

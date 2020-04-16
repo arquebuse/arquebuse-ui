@@ -6,9 +6,6 @@ import {AUTH_LOGOUT} from '../store/actions/auth'
 // Containers
 const TheContainer = () => import('@/containers/TheContainer');
 
-// Views
-const Dashboard = () => import('@/views/Dashboard');
-
 // Views - Pages
 const Page404 = () => import('@/views/pages/Page404');
 const Page500 = () => import('@/views/pages/Page500');
@@ -49,16 +46,11 @@ function configRoutes () {
   return [
     {
       path:        '/',
-      redirect:    '/dashboard',
+      redirect:    '/inbound',
       name:        'Home',
       component:   TheContainer,
       beforeEnter: ifAuthenticated,
       children: [
-        {
-          path:      'dashboard',
-          name:      'Dashboard',
-          component: Dashboard
-        },
         {
           path: 'inbound',
           meta: { label: 'Inbound'},

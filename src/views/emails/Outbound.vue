@@ -6,7 +6,7 @@
           <CCardHeader>
             <H2>Sent emails
               <div class="card-header-actions">
-                <CButton color="secondary" @click="newMail"><CIcon name="cil-pencil"/> New</CButton>
+                <CButton color="secondary" @click="newMail"><CIcon name="cil-paper-plane"/> New email</CButton>
               </div>
             </H2>
           </CCardHeader>
@@ -47,7 +47,7 @@
             </CDataTable>
           </CCardBody>
           <CCardFooter>
-            <CButton color="secondary" @click="newMail"><CIcon name="cil-pencil"/> New</CButton>
+            <CButton color="secondary" @click="newMail"><CIcon name="cil-paper-plane"/> New email</CButton>
           </CCardFooter>
         </CCard>
       </transition>

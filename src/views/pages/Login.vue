@@ -25,20 +25,20 @@
                 <CAlert v-if="alert" show :color="alertColor">{{ alertMessage }}</CAlert>
                 <CRow>
                   <CCol col="6">
-                    <CButton color="primary" class="px-4" @click="login" >Login</CButton>
+                    <CButton color="dark" class="px-4" @click="login" >Login</CButton>
                   </CCol>
                 </CRow>
               </CForm>
             </CCardBody>
           </CCard>
           <CCard
-            color="primary"
+            color="gray-900"
             text-color="white"
             class="text-center py-5 d-md-down-none"
             style="width:44%"
             body-wrapper
           >
-            <h2>Arquebuse</h2>
+            <img src="img/arquebuse-base-white.svg" class="c-card__image" alt="Arquebuse logo" width="180" height="47"/><br/><br/>
             <p>Arquebuse is an email infrastructure testing tool designed to facilitate email flow diagnostic and monitoring.</p>
           </CCard>
         </CCardGroup>
