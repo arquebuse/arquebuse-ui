@@ -5,13 +5,15 @@ const state = {
   bearerToken: localStorage.getItem('user-token') || '',
   fullName: localStorage.getItem('fullName') || '',
   status: '',
+  username: localStorage.getItem('username') || '',
 };
 
 const getters = {
-  isAuthenticated: state => !!state.bearerToken,
-  status: state => state.status,
   bearerToken: state => state.bearerToken,
   fullName: state => state.fullName,
+  isAuthenticated: state => !!state.bearerToken,
+  status: state => state.status,
+  username: state => state.username,
 };
 
 const actions = {
@@ -56,26 +58,32 @@ const actions = {
 const mutations = {
   [AUTH_SUCCESS]: (state, resp) => {
     state.bearerToken = resp.data.bearerToken;
-    state.status = 'LOGGED_IN';
     state.fullName = resp.data.fullName;
+    state.status = 'LOGGED_IN';
+    state.username = resp.data.username;
     localStorage.setItem('user-token', resp.data.bearerToken);
     localStorage.setItem('fullName', resp.data.fullName);
+    localStorage.setItem('username', resp.data.username);
     axios.defaults.headers.common['Authorization'] = 'Bearer ' + resp.data.bearerToken;
   },
   [AUTH_FAILURE]: (state) => {
     state.bearerToken = '';
-    state.status = 'DISCONNECTED';
     state.fullName = '';
+    state.status = 'DISCONNECTED';
+    state.username = '';
     localStorage.removeItem('user-token');
     localStorage.removeItem('fullName');
+    localStorage.removeItem('username');
     axios.defaults.headers.common['Authorization'] = '';
   },
   [AUTH_LOGOUT]: (state) => {
     state.bearerToken = '';
-    state.status = 'LOGGED_OUT';
     state.fullName = '';
+    state.status = 'LOGGED_OUT';
+    state.username = '';
     localStorage.removeItem('user-token');
     localStorage.removeItem('fullName');
+    localStorage.removeItem('username');
     axios.defaults.headers.common['Authorization'] = '';
   }
 };
