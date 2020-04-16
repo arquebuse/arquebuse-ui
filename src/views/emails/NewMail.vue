@@ -59,21 +59,16 @@
   export default {
     name: 'NewMail',
 
-    /*
-      "server": "127.0.0.1:2525",
-      "from" :  "<someone@arquebuse.org>",
-      "to" :    "Someone Else <someone.else@arquebuse.org>",
-      "data" :  "To: Someone Else\r\nSubject: Hello from PostMan !!!\r\nThis is the email body.\r\n"
-     */
-
     data: () => {
-      return {
-        mail: {
-            server: '127.0.0.1:2525',
-            from: 'someone@arquebuse.org',
+      let defaults = {
+        server: '127.0.0.1:2525',
+          from: 'someone@arquebuse.org',
             to: 'someone.else@arquebuse.org',
-            data: 'Subject: Hello from Arquebuse UI !!!\n\nThis is the email body.\n\nBest regards,\nArquebuse',
-        }
+          data: 'Subject: Hello from Arquebuse UI !!!\n\nThis is the email body.\n\nBest regards,\nArquebuse',
+      }
+      return {
+        defaults: Object.assign({}, defaults),
+        mail: Object.assign({}, defaults),
       }
     },
     methods: {
@@ -96,7 +91,10 @@
         return re.test(String(email).toLowerCase());
       },
       resetForm() {
-        this.server = this.from = this.to = this.data = '';
+        this.mail.server = this.defaults.server;
+        this.mail.from = this.defaults.from;
+        this.mail.to = this.defaults.to;
+        this.mail.data = this.defaults.data;
       }
     }
   }
