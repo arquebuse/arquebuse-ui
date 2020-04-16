@@ -213,7 +213,7 @@
           { key: 'fullName',        label: 'Full name' },
           { key: 'authentications', label: 'Authentications'},
           { key: 'roles',           label: 'Roles'},
-          { key: 'action',          label: 'Action'},
+          { key: 'action',          label: '', filter: false, sorter: false },
         ],
         perPage: 10,
         showDeleteDialog: false,

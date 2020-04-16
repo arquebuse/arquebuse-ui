@@ -44,10 +44,10 @@
                         />
                     </CForm>
                 </CCardBody>
-                <CCardFooter>
-                    <CButton color="primary" @click="send">Send</CButton>&nbsp;
+                <CCardFooter align="right">
+                    <CButton color="secondary" @click="goBack">Cancel</CButton>&nbsp;
                     <CButton color="secondary" @click="resetForm">Reset</CButton>&nbsp;
-                    <CButton color="secondary" @click="goBack">Cancel</CButton>
+                    <CButton color="primary" @click="send">Send</CButton>
                 </CCardFooter>
             </CCard>
         </CCol>
