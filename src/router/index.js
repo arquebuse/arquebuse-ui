@@ -1,124 +1,124 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import store from '../store'
-import {AUTH_LOGOUT} from '../store/actions/auth'
+import {AUTH_RENEW} from '../store/actions'
 
 // Containers
-const TheContainer = () => import('@/containers/TheContainer');
+const TheContainer = () => import('../containers/TheContainer');
 
 // Views - Pages
-const Page404 = () => import('@/views/pages/Page404');
-const Page500 = () => import('@/views/pages/Page500');
-const Login = () => import('@/views/pages/Login');
+const Page404 = () => import('../views/pages/Page404');
+const Page500 = () => import('../views/pages/Page500');
+const Login = () => import('../views/pages/Login');
 
 // Configuration
-const Users = () => import('@/views/configuration/Users');
+const Users = () => import('../views/configuration/Users');
 
 // Emails
-const Inbound = () => import('@/views/emails/Inbound');
-const MailDetails = () => import('@/views/emails/MailDetails');
-const NewMail = () => import('@/views/emails/NewMail');
-const Outbound = () => import('@/views/emails/Outbound');
-
+const Inbound = () => import('../views/emails/Inbound');
+const MailDetails = () => import('../views/emails/MailDetails');
+const NewMail = () => import('../views/emails/NewMail');
+const Outbound = () => import('../views/emails/Outbound');
 
 Vue.use(Router);
 
 const ifAuthenticated = (to, from, next) => {
   if (store.getters.isAuthenticated) {
-    next();
-    return
+    store.dispatch(AUTH_RENEW).then(() => next()).catch(err => console.log(err));
+    return;
   }
   next('/login')
-};
-
-const logout = (to, from, next) => {
-  store.dispatch(AUTH_LOGOUT, 'logout').then(() => next('/login'))
 };
 
 export default new Router({
   mode: 'hash',
   linkActiveClass: 'active',
-  scrollBehavior: () => ({ y: 0 }),
+  scrollBehavior: () => ({y: 0}),
   routes: configRoutes()
 })
 
-function configRoutes () {
+function configRoutes() {
   return [
     {
-      path:        '/',
-      redirect:    '/inbound',
-      name:        'Home',
-      component:   TheContainer,
+      path: '/',
+      redirect: '/inbound',
+      name: 'Home',
+      component: TheContainer,
       beforeEnter: ifAuthenticated,
       children: [
         {
           path: 'inbound',
-          meta: { label: 'Inbound'},
+          meta: {label: 'Inbound'},
           component: {
-            render (c) { return c('router-view') }
+            render(c) {
+              return c('router-view')
+            }
           },
           children: [
             {
               path: '',
               component: Inbound,
+              beforeEnter: ifAuthenticated,
             },
             {
               path: ':id',
-              meta: { label: 'Mail Details'},
+              meta: {label: 'Mail Details'},
               name: 'InboundMail',
               component: MailDetails,
+              beforeEnter: ifAuthenticated,
             },
           ]
         },
         {
           path: 'outbound',
-          meta: { label: 'Outbound'},
+          meta: {label: 'Outbound'},
           component: {
-            render (c) { return c('router-view') }
+            render(c) {
+              return c('router-view')
+            }
           },
           children: [
             {
               path: '',
               component: Outbound,
+              beforeEnter: ifAuthenticated,
             },
             {
               path: ':id',
-              meta: { label: 'Mail Details'},
+              meta: {label: 'Mail Details'},
               name: 'OutboundMail',
               component: MailDetails,
+              beforeEnter: ifAuthenticated,
             },
           ]
         },
         {
-          path:      'newmail',
-          name:      'NewMail',
-          component: NewMail
+          path: 'newmail',
+          name: 'NewMail',
+          component: NewMail,
+          beforeEnter: ifAuthenticated,
         },
         {
-          path:      'users',
-          name:      'Users',
-          component: Users
+          path: 'users',
+          name: 'Users',
+          component: Users,
+          beforeEnter: ifAuthenticated,
         }
       ]
     },
     {
-      path:      '/500',
-      name:      'Page500',
+      path: '/500',
+      name: 'Page500',
       component: Page500
     },
     {
-      path:      '/login',
-      name:      'Login',
+      path: '/login',
+      name: 'Login',
       component: Login
     },
     {
-      path:      '/logout',
-      name:      'Logout',
-      beforeEnter: logout,
-    },
-    {
-      path:      '*',
-      name:      'Page404',
+      path: '*',
+      name: 'Page404',
       component: Page404
     }
   ]

@@ -6,27 +6,32 @@
           <CCardHeader>
             <H2>Sent emails
               <div class="card-header-actions">
-                <CButton color="secondary" @click="newMail"><CIcon name="cil-paper-plane"/> New email</CButton>
+                <CButton @click="newMail" color="secondary">
+                  <CIcon name="cil-paper-plane"/>
+                  New email
+                </CButton>
               </div>
             </H2>
           </CCardHeader>
           <CCardBody>
             <CDataTable
-                    hover
-                    sorter
-                    column-filter
-                    table-filter
-                    items-per-page-select
-                    @row-clicked="rowClicked"
-                    :items="items"
-                    :fields="fields"
-                    :pagination="$options.paginationProps"
-                    index-column
+                :fields="fields"
+                :items="items"
+                :pagination="$options['paginationProps']"
+                @row-clicked="rowClicked"
+                column-filter
+                hover
+                index-column
+                items-per-page-select
+                sorter
+                table-filter
             >
 
               <template #action="data">
                 <td>
-                  <CIcon height="15" name="cil-trash"/>
+                  <a @click="deleteItem(data.item)" href="#">
+                    <CIcon height="15" name="cil-trash"/>
+                  </a>
                 </td>
               </template>
 
@@ -47,7 +52,10 @@
             </CDataTable>
           </CCardBody>
           <CCardFooter>
-            <CButton color="secondary" @click="newMail"><CIcon name="cil-paper-plane"/> New email</CButton>
+            <CButton @click="newMail" color="secondary">
+              <CIcon name="cil-paper-plane"/>
+              New email
+            </CButton>
           </CCardFooter>
         </CCard>
       </transition>
@@ -56,9 +64,10 @@
 </template>
 
 <script>
-  import axios from 'axios'
-  import { freeSet } from '@coreui/icons'
-  import moment from 'moment'
+  import axios from 'axios';
+  import {freeSet} from '@coreui/icons';
+  import moment from 'moment';
+
   export default {
     name: 'Inbound',
     freeSet,
@@ -77,15 +86,16 @@
         }*/
 
         fields: [
-          { key: 'timestamp', label: 'Sent' },
-          { key: 'server',    label: 'Destination' },
-          { key: 'from',      label: 'From' },
-          { key: 'to',        label: 'To' },
-          { key: 'subject',   label: 'Subject' },
-          { key: 'status',    label: 'Status' },
-          { key: 'action',    label: '', filter: false, sorter: false },
+          {key: 'timestamp', label: 'Sent'},
+          {key: 'server', label: 'Destination'},
+          {key: 'from', label: 'From'},
+          {key: 'to', label: 'To'},
+          {key: 'subject', label: 'Subject'},
+          {key: 'status', label: 'Status'},
+          {key: 'action', label: '', filter: false, sorter: false},
         ],
         perPage: 10,
+        deleted: false,
       }
     },
     paginationProps: {
@@ -94,32 +104,47 @@
       nextButtonHtml: 'next'
     },
     mounted() {
-      axios({ method: "GET", "url": "/outbound" }).then(result => {
-        this.items = result.data;
-      }).catch( () => {
-        console.error("Unable to fetch inbound mail list");
-      });
+      this.refreshData();
     },
     methods: {
-      formatDate (dateStr) {
+      refreshData() {
+        axios({method: "GET", "url": "/outbound"}).then(result => {
+          this.items = result.data;
+        }).catch(() => {
+          console.error("Unable to fetch inbound mail list");
+        });
+      },
+      formatDate(dateStr) {
         let date = moment(dateStr, moment.ISO_8601);
         return date.format("DD.MM.YYYY HH:mm:ss");
       },
-      getBadge (status) {
+      getBadge(status) {
         return status === 'SENT' ? 'success'
           : status === 'RETRIED' ? 'warning'
-            : status === 'FAILED' ? 'danger' : 'primary'
+            : status === 'FAILED' ? 'danger' : 'primary';
       },
-      mailLink (id) {
-        return `outbound/${id}`
-      },
-      rowClicked (item, index) {
-        const mailLink = this.mailLink(item.id);
-        this.$router.push({path: mailLink})
+      mailLink(id) {
+        return `outbound/${id}`;
       },
       newMail() {
-        this.$router.push('/newmail');
+        this.$router.push('/newmail').catch(err => console.log(err));
       },
+      rowClicked(item) {
+        if (this.deleted) {
+          this.deleted = false;
+        } else {
+          const mailLink = this.mailLink(item.id);
+          this.$router.push({path: mailLink}).catch(err => console.log(err));
+        }
+      },
+      deleteItem(item) {
+        this.deleted = true;
+        axios({method: "DELETE", "url": `/outbound/${item.id}`}).then(()=> {
+          this.refreshData();
+        }).catch(err => {
+          console.error(`Unable to delete item '${item.id}'. ${err}`);
+        });
+      }
     }
   }
 </script>

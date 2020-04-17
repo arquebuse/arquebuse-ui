@@ -1,10 +1,10 @@
 <template>
   <CDropdown
-    :show.sync="accountMenu"
-    inNav
-    class="c-header-nav-items"
-    placement="bottom-end"
-    add-menu-classes="pt-0"
+      :show.sync="accountMenu"
+      add-menu-classes="pt-0"
+      class="c-header-nav-items"
+      inNav
+      placement="bottom-end"
   >
     <template #toggler>
       <CHeaderNavLink>
@@ -13,44 +13,50 @@
         </div>
       </CHeaderNavLink>
       <CModal
-              :show.sync="pwdDialog"
-              :no-close-on-backdrop="true"
-              :centered="true"
-              title="Change password"
-              color="dark"
+          :centered="true"
+          :no-close-on-backdrop="true"
+          :show.sync="pwdDialog"
+          color="dark"
+          title="Change password"
       >
         <CForm>
           <CInput
-                  placeholder="Current Password"
-                  label="Current"
-                  horizontal
-                  type="password"
-                  autocomplete="current_password"
-                  v-model="currentPassword"
+              autocomplete="current_password"
+              horizontal
+              label="Current"
+              placeholder="Current Password"
+              type="password"
+              v-model="currentPassword"
           >
-            <template #prepend-content><CIcon name="cil-lock-locked"/></template>
+            <template #prepend-content>
+              <CIcon name="cil-lock-locked"/>
+            </template>
           </CInput>
           <CInput
-                  placeholder="New Password"
-                  label="New"
-                  horizontal
-                  type="password"
-                  autocomplete="password"
-                  v-model="password"
+              autocomplete="password"
+              horizontal
+              label="New"
+              placeholder="New Password"
+              type="password"
+              v-model="password"
           >
-            <template #prepend-content><CIcon name="cil-lock-locked"/></template>
+            <template #prepend-content>
+              <CIcon name="cil-lock-locked"/>
+            </template>
           </CInput>
           <CInput
-                  placeholder="New Password"
-                  label="Confirm"
-                  horizontal
-                  type="password"
-                  autocomplete="confirm_password"
-                  v-model="confirmPassword"
+              autocomplete="confirm_password"
+              horizontal
+              label="Confirm"
+              placeholder="New Password"
+              type="password"
+              v-model="confirmPassword"
           >
-            <template #prepend-content><CIcon name="cil-lock-locked"/></template>
+            <template #prepend-content>
+              <CIcon name="cil-lock-locked"/>
+            </template>
           </CInput>
-          <CAlert v-if="alert" show color="danger">{{ alertMessage }}</CAlert>
+          <CAlert color="danger" show v-if="alert">{{ alertMessage }}</CAlert>
         </CForm>
         <template #header>
           <h6 class="modal-title">Change password</h6>
@@ -63,78 +69,87 @@
       </CModal>
     </template>
     <CDropdownItem @click="changePass">
-      <CIcon name="cil-lock-locked" /> Change password
+      <CIcon name="cil-lock-locked"/>
+      Change password
     </CDropdownItem>
     <CDropdownItem @click="logout">
-      <CIcon name="cil-account-logout" /> Logout
+      <CIcon name="cil-account-logout"/>
+      Logout
     </CDropdownItem>
   </CDropdown>
 </template>
 
 <script>
-import store from '../store'
-import axios from "axios";
-export default {
-  name: 'AccountDropdown',
-  data () {
-    return {
-      fullName:        'Unknown !!!',
-      pwdDialog:       false,
-      accountMenu:     false,
-      currentPassword: '',
-      password:        '',
-      confirmPassword: '',
-      alertColor:      'alert',
-      alert:           false,
-      alertMessage:    '',
-    }
-  },
-  mounted() {
-    this.fullName = store.getters.fullName;
-  },
-  methods: {
-    logout() {
-      this.$router.push('/logout')
-    },
-    changePass() {
-      this.pwdDialog = true;
-      this.accountMenu = false;
-    },
-    closeDialog() {
-      this.pwdDialog = false;
-      this.currentPassword = '';
-      this.password = '';
-      this.confirmPassword = '';
-    },
-    submit() {
-      if (this.password.length < 6) {
-        this.alertMessage = "Password must be at least 5 characters long";
-        this.alert = true;
-        return
-      }
+  import store from '../store'
+  import axios from "axios";
+  import {AUTH_LOGOUT} from "../store/actions";
 
-      if (this.password != this.confirmPassword) {
-        this.alertMessage = "New passwords are not the same";
-        this.alert = true;
-        return
+  export default {
+    name: 'AccountDropdown',
+    data() {
+      return {
+        fullName: 'Unknown !!!',
+        pwdDialog: false,
+        accountMenu: false,
+        currentPassword: '',
+        password: '',
+        confirmPassword: '',
+        alertColor: 'alert',
+        alert: false,
+        alertMessage: '',
       }
-
-      axios({ method: "PATCH", "url": "/users/me", "data": { "password": this.currentPassword, "newPassword": this.password }, "headers": { "content-type": "application/json" }}).then(resp => {
-        this.closeDialog()
-      })
-      .catch(err => {
-        console.log(err);
-        if (err.toString().indexOf('400') !== -1) {
-          this.alertMessage = "Bad current password"
-        } else {
-          this.alertMessage = "Failed to update password"
+    },
+    mounted() {
+      this.fullName = store.getters.fullName;
+    },
+    methods: {
+      logout() {
+        store.dispatch(AUTH_LOGOUT, 'logout').catch(err => console.log(err));
+        this.$router.push('/login').catch(err => console.log(err));
+      },
+      changePass() {
+        this.pwdDialog = true;
+        this.accountMenu = false;
+      },
+      closeDialog() {
+        this.pwdDialog = false;
+        this.currentPassword = '';
+        this.password = '';
+        this.confirmPassword = '';
+      },
+      submit() {
+        if (this.password.length < 6) {
+          this.alertMessage = "Password must be at least 5 characters long";
+          this.alert = true;
+          return
         }
 
-        this.alert = true;
-      })
+        if (this.password !== this.confirmPassword) {
+          this.alertMessage = "New passwords are not the same";
+          this.alert = true;
+          return
+        }
+
+        axios({
+          method: "PATCH",
+          "url": "/users/me",
+          "data": {"password": this.currentPassword, "newPassword": this.password},
+          "headers": {"content-type": "application/json"}
+        }).then(()=> {
+          this.closeDialog()
+        }).catch(err => {
+          console.log(err);
+          if (err.toString().indexOf('400') !== -1) {
+            this.alertMessage = "Bad current password"
+          } else {
+            this.alertMessage = "Failed to update password"
+          }
+
+          this.alert = true;
+        })
+      }
     }
   }
-}
 </script>
 
 <style scoped>

@@ -13,7 +13,7 @@
 </template>
 
 <script>
-export default {
-  name: 'Page500'
-}
+  export default {
+    name: 'Page500'
+  }
 </script>

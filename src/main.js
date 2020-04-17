@@ -4,9 +4,9 @@ import router from './router'
 import CoreuiVue from '@coreui/vue'
 import store from './store'
 import axios from 'axios'
-import { iconsSet as icons } from './assets/icons/icons.js'
-import { apiHost } from './config'
-import {AUTH_LOGOUT} from './store/actions/auth'
+import {iconsSet as icons} from './assets/icons/icons.js'
+import {apiHost} from './config'
+import {AUTH_LOGOUT} from './store/actions'
 
 // Axios configuration
 axios.defaults.baseURL = apiHost;
@@ -19,9 +19,9 @@ axios.interceptors.response.use(response => {
   if (error.response.status === 401) {
     store.dispatch(AUTH_LOGOUT, 'unauthorized').then(() => {
       if (router.currentRoute.path !== '/login') {
-        router.push('/login').then()
+        router.push('/login').catch(err => console.log(err));
       }
-    })
+    }).catch(err => console.log(err));
   }
   return Promise.reject(error);
 });
