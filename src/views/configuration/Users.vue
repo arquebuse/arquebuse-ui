@@ -289,19 +289,6 @@
 
         return isValid
       },
-      getUserData() {
-        let data = {
-          username: this.username,
-          fullName: this.fullName,
-          roles: this.selectedRoles,
-        }
-
-        if (this.password !== '******') {
-          data.newPassword = this.password;
-        }
-
-        return data;
-      },
       deleteUser(item) {
         this.username = item.username;
         this.alertList = [];
@@ -330,10 +317,20 @@
       },
       submitEdit() {
         if (this.checkUser()) {
+          let data = {
+            username: this.username,
+            fullName: this.fullName,
+            roles: this.selectedRoles,
+          }
+
+          if (this.password !== '******') {
+            data.newPassword = this.password;
+          }
+
           axios({
             method: "PATCH",
             "url": `/users/${this.username}`,
-            "data": this.getUserData(),
+            "data": data,
             "headers": {"content-type": "application/json"}
           }).then(() => {
             this.closeEdit();
@@ -357,10 +354,17 @@
       },
       submitNew() {
         if (this.checkUser()) {
+          let data = {
+            username: this.username,
+            fullName: this.fullName,
+            roles: this.selectedRoles,
+            password: this.password,
+          }
+
           axios({
             method: "POST",
             "url": "/users",
-            "data": this.getUserData(),
+            "data": data,
             "headers": {"content-type": "application/json"}
           }).then(() => {
             this.closeNew();
