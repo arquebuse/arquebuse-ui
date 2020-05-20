@@ -34,13 +34,11 @@
                   </td>
                 </template>
 
-                <template #authentications="data">
+                <template #authentication="data">
                   <td>
-                    <span v-for="authentication in data.item['authentications']">
-                      &nbsp;<CBadge color="secondary">
-                        {{authentication}}
-                      </CBadge>
-                    </span>
+                    &nbsp;<CBadge color="secondary">
+                      {{data.item['authentication']}}
+                    </CBadge>
                   </td>
                 </template>
 
@@ -57,7 +55,6 @@
                     </template>
                   </td>
                 </template>
-
               </CDataTable>
             </CCardBody>
             <CCardFooter>
@@ -100,25 +97,44 @@
             placeholder="Username"
             readonly
             v-model="username"
-        >
-        </CInput>
+        />
         <CInput
             autocomplete="full_name"
             horizontal
             label="Full name"
             placeholder="Full name"
             v-model="fullName"
-        >
-        </CInput>
+        />
+        <div class="form-row">
+          <CCol class="col-form-label" sm="3" tag="label">
+            Authentication
+          </CCol>
+          <CCol sm="9">
+            <CSelect
+                @change="switchAuthentication()"
+                :value.sync="authentication"
+                :options="['Password', 'API-Key']"
+            />
+          </CCol>
+        </div>
         <CInput
+            @change="passwordUpdated = true"
+            v-if="showPassword"
             autocomplete="password"
             horizontal
             label="Password"
-            placeholder="Password"
+            placeholder="Enter a password"
             type="password"
             v-model="password"
-        >
-        </CInput>
+        />
+        <div class="form-group form-row" v-if="showApiKeyMessage">
+          <CCol class="col-form-label" sm="3" tag="label">
+            API-Key
+          </CCol>
+          <CCol sm="9" @click="switchGenerateApiKey()">
+            {{apiKeyMessage}}
+          </CCol>
+        </div>
         <div class="form-group form-row">
           <CCol class="col-form-label" sm="3" tag="label">
             Roles
@@ -157,25 +173,42 @@
             label="Username"
             placeholder="Username"
             v-model="username"
-        >
-        </CInput>
+        />
         <CInput
             autocomplete="full_name"
             horizontal
             label="Full name"
             placeholder="Full name"
             v-model="fullName"
-        >
-        </CInput>
+        />
+        <div class="form-row">
+          <CCol class="col-form-label" sm="3" tag="label">
+            Authentication
+          </CCol>
+          <CCol sm="9">
+            <CSelect
+                @change="switchAuthentication()"
+                :value.sync="authentication"
+                :options="['Password', 'API-Key']"
+            />
+          </CCol>
+        </div>
         <CInput
-            autocomplete="password"
+            v-if="showPassword"
             horizontal
             label="Password"
-            placeholder="Password"
+            placeholder="Enter a password"
             type="password"
             v-model="password"
-        >
-        </CInput>
+        />
+        <div class="form-group form-row" v-if="showApiKeyMessage">
+          <CCol class="col-form-label" sm="3" tag="label">
+            API-Key
+          </CCol>
+          <CCol sm="9">
+            {{apiKeyMessage}}
+          </CCol>
+        </div>
         <div class="form-group form-row">
           <CCol class="col-form-label" sm="3" tag="label">
             Roles
@@ -200,6 +233,27 @@
         <CButton @click="submitNew" color="primary">Create</CButton>
       </template>
     </CModal>
+
+    <CModal
+        :show.sync="showApiKeyDialog"
+        :no-close-on-backdrop="true"
+        title="API-Key"
+        color="dark"
+    >
+      <div align="center">
+      <h5>This is the only time this key will be displayed !</h5>
+      <CAlert show color="danger"><b>{{apiKey}}</b></CAlert>
+      Please keep this API-Key in a safe place. If you loose it, you'll need to generate a new one.
+      </div>
+      <template #header>
+        <h6 class="modal-title">User's API-Key</h6>
+        <CButtonClose @click="closeApiKey()" class="text-white"/>
+      </template>
+      <template #footer>
+        <CButton @click="closeApiKey()" color="primary">OK</CButton>
+      </template>
+    </CModal>
+
   </div>
 </template>
 
@@ -217,7 +271,7 @@
         fields: [
           {key: 'username', label: 'Username'},
           {key: 'fullName', label: 'Full name'},
-          {key: 'authentications', label: 'Authentications'},
+          {key: 'authentication', label: 'Authentication'},
           {key: 'roles', label: 'Roles'},
           {key: 'action', label: '', filter: false, sorter: false},
         ],
@@ -225,10 +279,19 @@
         showDeleteDialog: false,
         showEditDialog: false,
         showNewDialog: false,
+        showApiKeyDialog: false,
+        showPassword: true,
+        showApiKeyMessage: false,
+        generateApiKey: false,
+        passwordUpdated: false,
+        apiKeyMessage: '',
         currentUsername: '',
+        authentication: 'Password',
+        currentAuthentication: 'Password',
         username: '',
         fullName: '',
         password: '',
+        apiKey: '',
         roleList: ['admin', 'reader', 'monitor', 'operator', 'sender'],
         selectedRoles: [],
         alertList: [],
@@ -261,6 +324,10 @@
         let isValid = true;
         const usernameRe = /^[A-Za-z0-9\-_]+$/g;
         const fullNameRe = /^[A-Za-z0-9\-_ ]+$/g;
+        const uppercaseRe = /[A-Z]/g
+        const lowercaseRe = /[a-z]/g
+        const digitRe = /[0-9]/g
+        const specialRe = /[^A-Za-z0-9]/g
         if (this.username === '') {
           this.alertList.push('Username cannot be empty');
           isValid = false;
@@ -277,9 +344,20 @@
           isValid = false;
         }
 
-        if (this.password.length < 6) {
-          this.alertList.push('Password must be at least 6 characters');
-          isValid = false;
+        if (this.passwordUpdated && this.authentication === "Password") {
+          if (this.password.length < 6) {
+            this.alertList.push('Password must be at least 6 characters');
+            isValid = false;
+          }
+          let charTypeCount = 0;
+          if (uppercaseRe.test(this.password)) { charTypeCount++; }
+          if (lowercaseRe.test(this.password)) { charTypeCount++; }
+          if (digitRe.test(this.password)) { charTypeCount++; }
+          if (specialRe.test(this.password)) { charTypeCount++; }
+          if (charTypeCount < 3) {
+            this.alertList.push('Password must contains at least 3 types of characters');
+            isValid = false;
+          }
         }
 
         if (this.selectedRoles.length < 1) {
@@ -309,8 +387,20 @@
       editUser(item) {
         this.username = item.username;
         this.fullName = item.fullName;
-        this.password = '******';
         this.selectedRoles = item.roles;
+        this.authentication = item.authentication;
+        this.currentAuthentication = item.authentication;
+        this.udpateAuthentication();
+        if (item.authentication === "API-Key") {
+          this.password = '';
+          this.passwordUpdated = true;
+          this.apiKeyMessage = "Click here if you want the user's API-Key to be changed";
+        } else {
+          this.password = '******';
+          this.passwordUpdated = false;
+          this.apiKeyMessage = 'A new API-Key will be generated when you press the Update button';
+        }
+        this.generateApiKey = false;
         this.alertList = [];
         this.showEditDialog = true;
         this.$store.dispatch(AUTH_RENEW).catch(err => console.log(err)); // Renew auth to prevent expiration while editing a user
@@ -323,7 +413,7 @@
             roles: this.selectedRoles,
           }
 
-          if (this.password !== '******') {
+          if (this.passwordUpdated && this.authentication === "Password") {
             data.newPassword = this.password;
           }
 
@@ -343,12 +433,19 @@
       closeEdit() {
         this.alertList = [];
         this.showEditDialog = false;
+        this.submitApiKey();
       },
       newUser() {
         this.username = '';
         this.fullName = '';
         this.password = '';
+        this.passwordUpdated = true;
         this.selectedRoles = ['operator'];
+        this.authentication = 'Password';
+        this.currentAuthentication = '';
+        this.udpateAuthentication();
+        this.apiKeyMessage = 'An API-Key will be generated when you press the Create button';
+        this.generateApiKey = false;
         this.showNewDialog = true;
         this.$store.dispatch(AUTH_RENEW).catch(err => console.log(err)); // Renew auth to prevent expiration while creating a new user
       },
@@ -377,7 +474,56 @@
       closeNew() {
         this.alertList = [];
         this.showNewDialog = false;
+        this.submitApiKey();
       },
+      submitApiKey() {
+        if (this.generateApiKey) {
+          axios({
+            method: "POST",
+            "url": `/users/${this.username}/api-key`,
+          }).then(result => {
+            this.apiKey = result.data["API-Key"];
+          }).catch(err => {
+            console.log(err);
+            this.apiKey = 'Failed to get a new API-Key';
+          })
+          this.showApiKeyDialog = true;
+        }
+      },
+      closeApiKey() {
+        this.showApiKeyDialog = false;
+        this.apiKey = '';
+      },
+      udpateAuthentication() {
+        if (this.authentication === "Password") {
+          this.showPassword = true;
+          this.showApiKeyMessage = false;
+        } else {
+          this.showPassword = false;
+          this.showApiKeyMessage = true;
+        }
+      },
+      switchAuthentication() {
+        if (this.authentication === "Password") {
+          this.generateApiKey = false;
+        } else {
+          if (this.currentAuthentication !== "API-Key") {
+            this.generateApiKey = true;
+          }
+        }
+        this.udpateAuthentication()
+      },
+      switchGenerateApiKey() {
+        if (this.currentAuthentication === "API-Key") {
+          if (this.generateApiKey) {
+            this.generateApiKey = false;
+            this.apiKeyMessage = "Click here if you want the user's API-Key to be changed"
+          } else {
+            this.generateApiKey = true;
+            this.apiKeyMessage = 'A new API-Key will be generated when you press the Update button';
+          }
+        }
+      }
     }
   }
 </script>
